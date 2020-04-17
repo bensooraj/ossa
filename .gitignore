@@ -1,0 +1,6 @@
+tmp
+node_modules
+coverage
+*.rdb
+.vscode
+package-lock.json

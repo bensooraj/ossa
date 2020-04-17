@@ -1,6 +1,0 @@
-node_modules
-tmp
-coverage
-*.rdb
-.vscode
-package-lock.json
