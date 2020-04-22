@@ -1,1 +1,1 @@
-module.exports = require('./lib/hermes');
+module.exports = require('./lib/ossa');

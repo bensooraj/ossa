@@ -1,5 +1,5 @@
 {
-  "name": "hermes",
+  "name": "ossa",
   "version": "1.0.0",
   "description": "A simple Node.js package for implementing a notification service. Powered by Redis.",
   "main": "index.js",
@@ -11,10 +11,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bensooraj/hermes"
+    "url": "https://github.com/bensooraj/ossa"
   },
   "bugs": {
-    "url": "https://github.com/bensooraj/hermes/issues"
+    "url": "https://github.com/bensooraj/ossa/issues"
   },
   "dependencies": {
     "moment": "^2.24.0",
