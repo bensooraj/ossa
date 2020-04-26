@@ -1,3 +1,7 @@
+# Ossa
+
+[![npm version](https://badge.fury.io/js/ossa.svg)](https://badge.fury.io/js/ossa)
+
 Ossa is a Node.js server-side module (powered by Redis) for creating a basic notification service.
 
 It's API is dead simple. Developers are welcome to test it out in their pet projects!
