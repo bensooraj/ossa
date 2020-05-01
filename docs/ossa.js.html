@@ -131,53 +131,57 @@ class Ossa extends EventEmitter {
     /**
      *
      * sendNotification: Method for setting the notification payload along with when it should be sent
-     * @param {notificationPayload} payload
+     * @param {notificationPayload} notificationPayload
      * @returns {String} notificationID (of the form `namespace::uuid`)
      * @memberof Ossa
      */
-    async sendNotification(payload) {
+    async sendNotification(notificationPayload) {
         // Set the debugger/logger
         let _log = log.extend('sendNotification');
-        _log("Payload received: %O", payload);
+        _log("notificationPayload received: %O", notificationPayload);
 
         // input check
         if (!(
-            payload.hasOwnProperty("message") &amp;&amp; typeof payload.message === 'string' &amp;&amp; payload.message !== ""
+            notificationPayload.hasOwnProperty("message") &amp;&amp; typeof notificationPayload.message === 'string' &amp;&amp; notificationPayload.message !== ""
         )) {
-            throw new Error("[payload.message] The message must be of type string");
+            throw new Error("[notificationPayload.message] The message must be of type string");
         }
 
         // Calculate the expiration duration in seconds
-        let expirationDurationInSeconds = 0;
-        if (payload.hasOwnProperty("on") &amp;&amp; payload.on !== "") {
+        let expirationInMilliSeconds = 0;
+        if (notificationPayload.hasOwnProperty("on") &amp;&amp; notificationPayload.on !== "") {
             // Check if the datetime is valid
-            if (moment(payload.on).isValid()) {
-                throw new Error(`[payload.on] Invalid date format`);
+            if (!moment(notificationPayload.on).isValid()) {
+                throw new Error(`[notificationPayload.on] Invalid date format: ${notificationPayload.on}`);
             }
             // Check if the datetime is in the future
-            if (moment(payload.on).isBefore(moment.utc())) {
-                throw new Error(`[payload.on] Datetime must be a future Datetime`);
+
+            if (moment(notificationPayload.on).isBefore(moment.utc())) {
+                throw new Error(`[notificationPayload.on] Datetime must be a future Datetime`);
             }
-            const timeDiff = moment(payload.on).diff(moment.utc());
-            const timeDuration = moment.duration(timeDiff);
-            expirationDurationInSeconds = Math.round(timeDuration.asSeconds());
+            expirationInMilliSeconds = moment(notificationPayload.on).unix();
 
-        } else if (payload.hasOwnProperty("in") &amp;&amp; payload.on !== "") {
-            expirationDurationInSeconds = ms(payload.in) / 1000
+        } else if (notificationPayload.hasOwnProperty("in") &amp;&amp; notificationPayload.on !== "") {
+            expirationInMilliSeconds = ms(notificationPayload.in);
         }
-        _log("expirationDurationInSeconds: %s", expirationDurationInSeconds);
+        _log("expirationInMilliSeconds: %s", expirationInMilliSeconds);
 
-        const notificationID = `${this.namespace}::${uuidv4()}`,
-            notificationPayload = JSON.stringify(payload);
+        const notificationID = `${this.namespace}::${uuidv4()}`;
         // start a separate multi command queue
         const multi = this.client.multi();
-        // Set key with expiry
-        multi.setex(notificationID, expirationDurationInSeconds, new Date().toTimeString());
+
+        // Set key with expiry only IF IT DOESN'T EXIST already
+        if (notificationPayload.hasOwnProperty("on")) {
+            multi.set(notificationID, moment().utc().format("YYYY-MM-DD HH:mm:ss"), "NX");
+            multi.expireat(notificationID, expirationInMilliSeconds);
+
+        } else if (notificationPayload.hasOwnProperty("in")) {
+            multi.set(notificationID, moment().utc().format("YYYY-MM-DD HH:mm:ss"), "PX", expirationInMilliSeconds, "NX");
+        }
         // Store the payload
-        multi.hset(this.ossa_payload_store, notificationID, notificationPayload);
+        multi.hset(this.ossa_payload_store, notificationID, JSON.stringify(notificationPayload));
 
         const multiExecAsync = promisify(multi.exec).bind(multi);
-        // const setexAsync = promisify(this.client.setex).bind(this.client);
         try {
             const [ok, count] = await multiExecAsync();
             if (ok !== 'OK' &amp;&amp; count) {
@@ -270,16 +274,14 @@ class Ossa extends EventEmitter {
         let expirationInMilliSeconds = 0;
         if (notificationPayload.hasOwnProperty("on") &amp;&amp; notificationPayload.on !== "") {
             // Check if the datetime is valid
-            if (moment(notificationPayload.on).isValid()) {
+            if (!moment(notificationPayload.on).isValid()) {
                 throw new Error(`[notificationPayload.on] Invalid date format`);
             }
             // Check if the datetime is in the future
             if (moment(notificationPayload.on).isBefore(moment.utc())) {
                 throw new Error(`[notificationPayload.on] Datetime must be a future Datetime`);
             }
-            // const timeDiff = moment(notificationPayload.on).diff(moment.utc());
-            // const timeDuration = moment.duration(timeDiff);
-            expirationInMilliSeconds = moment(notificationPayload.on).valueOf();
+            expirationInMilliSeconds = moment(notificationPayload.on).unix();
 
         } else if (notificationPayload.hasOwnProperty("in") &amp;&amp; notificationPayload.on !== "") {
             expirationInMilliSeconds = ms(notificationPayload.in);
@@ -455,7 +457,7 @@ module.exports.createNotifier = (options) => {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Apr 28 2020 22:02:25 GMT+0530 (India Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sat May 02 2020 03:28:46 GMT+0530 (India Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
