@@ -9,6 +9,7 @@ typings
 .github
 .editorconfig
 .eslintrc.yml
+.eslintrc.json
 .travis.yml
 .gitignore
 *.md
