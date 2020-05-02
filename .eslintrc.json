@@ -29,8 +29,8 @@
             }
         ],
         "semi": [
-            0,
-            "never"
+            1,
+            "always"
         ],
         "semi-spacing": [
             "error",
@@ -51,6 +51,19 @@
         "eqeqeq": [
             "error",
             "always"
+        ],
+        "curly": [
+            "error"
+        ],
+        "eol-last": [
+            "error",
+            "always"
+        ],
+        "no-trailing-spaces": [
+            "error"
+        ],
+        "no-var": [
+            "error"
         ]
     }
 }
