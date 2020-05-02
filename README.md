@@ -107,7 +107,27 @@ try {
 }
 ```
 
+#### Update/Reschedule the notification
 
+```js
+const notificationID = "ossa::f1799e87-6740-4394-bf5e-d6e55eae3914";
+const notificationPayload = {
+    in: '20s',
+    message: JSON.stringify({
+        name: "Ben S",
+        age: 100,
+        some: "more"
+        and: "some more"
+    })
+}
+try {
+    const response = await ossa.updateNotification(notificationID, notificationPayload);
+} catch (error) {
+    throw new Error(error);
+}
+```
+
+The `response` will be `1` if the update was successful, `0` if it wasn't.
 
 [1]: https://momentjs.com/docs/#/use-it/node-js/
 
