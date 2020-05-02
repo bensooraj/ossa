@@ -88,6 +88,24 @@ ossa.on('notification-received', async (notificationID, notificationPayload) => 
 // └─────────┴──────────────────────────────────────────────┴─────────────────────────────┘
 ```
 
+#### Get/view the notification scheduled for delivery
+
+You can view the notification/message scheduled for delivery using its `notificationID`. You get the both:
+1. `ttl`: Time to live. Time remaining before the notification/message is delivered
+2. `notificationPayload`: The actual payload that will be delivered.
+
+```js
+const Ossa = require('ossa');
+const ossa = new Ossa({ namespace: "ossa" });
+
+const notificationID = "ossa::f1799e87-6740-4394-bf5e-d6e55eae3914";
+try {
+    const [ttl, notificationPayload] = await ossa.getNotificationByID(notificationID);
+    console.log("Message received: ", notificationPayload.message)
+} catch (error) {
+    throw new Error(error);
+}
+```
 
 
 
