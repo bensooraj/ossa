@@ -26,7 +26,8 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const EventEmitter = require('events').EventEmitter;
+            <pre class="prettyprint source linenums"><code>/* eslint-disable no-prototype-builtins */
+const EventEmitter = require('events').EventEmitter;
 const { promisify } = require("util");
 
 const redis = require('./redis');
@@ -43,7 +44,7 @@ const log = debug('ossa');
  * @typedef {Object} notificationPayload
  * @property {String} message The actual associated with the notification
  * @property {(Number|String)} in Number of milliseconds to send the message after. It can also be a string of the form:
- * 
+ *
  * &lt;pre>
  * '2 days'
  * '1d'
@@ -53,19 +54,19 @@ const log = debug('ossa');
  * '1m'
  * '5s'
  * '1y'
- * '100'  
+ * '100'
  * &lt;/pre>
- * 
+ *
  * &lt;p>Refer the [ms module's documentation]{@link https://github.com/zeit/ms#readme}&lt;/p>
- * 
+ *
  * @property {String} on A valid timestamp string.
- * 
+ *
  * &lt;p>Refer the [momentjs module's documentation]{@link https://momentjs.com/docs/#/parsing/is-valid/}&lt;/p>
  */
 
 /**
  * Node.js server-side module (powered by Redis) for creating a basic notification service.
- * 
+ *
  * @extends {EventEmitter}
  */
 class Ossa extends EventEmitter {
@@ -76,7 +77,7 @@ class Ossa extends EventEmitter {
      * @param {(String|Object)} [options.redis] Redis client connection options. For exhaustive list of properties and defaults please refer to the [redis documentation]{@link https://github.com/NodeRedis/node-redis#rediscreateclient}
      * @param {String} [options.redis.host=127.0.0.1] IP address of the Redis server
      * @param {Number} [options.redis.port=6379] Port of the Redis server
-     * @param {Number} [options.redis.db=0] If set, client will run Redis `select` command on connect. 
+     * @param {Number} [options.redis.db=0] If set, client will run Redis `select` command on connect.
      * @param {Boolean} [options.debug=false] Toggle debug mode
      * @memberof Ossa
      */
@@ -107,11 +108,11 @@ class Ossa extends EventEmitter {
         this.client = redis.createRedisClient(options);
 
         // Subscriber | For receiving key expiration event
-        this.subscriber = this.client.duplicate()
+        this.subscriber = this.client.duplicate();
         // Enable Redis Keyspace Notifications via the CONFIG SET.
         try {
             const reply = this.subscriber.config("SET", "notify-keyspace-events", "ExKl");
-            log("Subcriber set config response: %s", reply)
+            log("Subcriber set config response: %s", reply);
         } catch (error) {
             log("Error enabling Redis Keyspace Notifications");
             throw new Error(error);
@@ -121,8 +122,8 @@ class Ossa extends EventEmitter {
         this.subscriber.subscribe(`__keyspace@0__:${this.ossa_processing_queue}`);
         this.subscriber.on('message', this.keyspaceNotificationsHandler.bind(this));
 
-        log(`Subscriber subscribed to: __keyevent@0__:expired`)
-        log(`Subscriber subscribed to: __keyspace@0__:${this.ossa_processing_queue}`)
+        log(`Subscriber subscribed to: __keyevent@0__:expired`);
+        log(`Subscriber subscribed to: __keyspace@0__:${this.ossa_processing_queue}`);
 
         // Cache the instance
         Ossa[this.namespace] = this;
@@ -194,20 +195,20 @@ class Ossa extends EventEmitter {
     }
 
     /**
-     * 
+     *
      * @summary Get a scheduled notification's TTL (time to live) remaining and payload, by notificationID.
      * @description The `ttl` returned can have three possible values
-     * 
+     *
      * &lt;pre>
-     *    'A positive integer'    Actual time to live in milliseconds 
+     *    'A positive integer'    Actual time to live in milliseconds
      *    '-2'                    If the key does not exist, or if it has expired. Payload returned will be null.
      *    '-1'                    If the key exists but has no associated expire. Payload returned will be null.
      * &lt;/pre>
-     * 
+     *
      * @param {String} notificationID of the form `namespace::uuid`
      * @returns {Array} [ttl, {@link notificationPayload}]
      * @memberof Ossa
-     * 
+     *
      */
     async getNotificationByID(notificationID) {
         const namespaceCheck = new RegExp(`^${this.namespace}::.*$`, 'i');
@@ -232,7 +233,7 @@ class Ossa extends EventEmitter {
         } catch (error) {
             throw new Error(error);
         }
-    };
+    }
 
     /**
      *
@@ -240,12 +241,12 @@ class Ossa extends EventEmitter {
      * @param {String} notificationID
      * @param {notificationPayload} notificationPayload
      * @returns {Number} Response will be one of:
-     * 
+     *
      * &lt;pre>
      *    0    The update was not made, because the notificationID was not found or has expired already
      *    1    The update was successful
      * &lt;/pre>
-     * 
+     *
      * @memberof Ossa
      */
     async updateNotification(notificationID, notificationPayload) {
@@ -302,7 +303,7 @@ class Ossa extends EventEmitter {
         const multiExecAsync = promisify(multi.exec).bind(multi);
         try {
             const reply = await multiExecAsync();
-            _log("multiExecAsync::reply: %O", reply)
+            _log("multiExecAsync::reply: %O", reply);
             if (reply[0] === 'OK') {
                 const hsetAsync = promisify(this.client.hset).bind(this.client);
                 try {
@@ -326,12 +327,12 @@ class Ossa extends EventEmitter {
      *
      * @param {String} notificationID
      * @returns {Number}
-     * 
+     *
      * &lt;pre>
      *    0    notification was not deleted, because the notificationID was not found or has expired already
      *    1    The delete was successful
      * &lt;/pre>
-     * 
+     *
      * @memberof Ossa
      */
     async deleteNotification(notificationID) {
@@ -350,13 +351,13 @@ class Ossa extends EventEmitter {
 
         // start a separate multi command queue
         const multi = this.client.multi();
-        multi.del(notificationID)
+        multi.del(notificationID);
         multi.hdel(this.ossa_payload_store, notificationID);
         const multiExecAsync = promisify(multi.exec).bind(multi);
 
         try {
             const reply = await multiExecAsync();
-            _log("multiExecAsync::reply: %O", reply)
+            _log("multiExecAsync::reply: %O", reply);
             if (reply[0] > 0) {
                 return 1;
             }
@@ -401,11 +402,12 @@ class Ossa extends EventEmitter {
 
             const blpopAsync = promisify(this.client.blpop).bind(this.client);
             try {
+                // eslint-disable-next-line no-unused-vars
                 const [_, notificationID] = await blpopAsync(this.ossa_processing_queue, 0);
 
                 const multi = this.client.multi();
-                multi.hget(this.ossa_payload_store, notificationID)
-                multi.hdel(this.ossa_payload_store, notificationID)
+                multi.hget(this.ossa_payload_store, notificationID);
+                multi.hdel(this.ossa_payload_store, notificationID);
                 const multiExecAsync = promisify(multi.exec).bind(multi);
                 try {
                     const [notificationPayload, count] = await multiExecAsync();
@@ -441,7 +443,8 @@ module.exports.createNotifier = (options) => {
         Ossa.singleton = new Ossa(options);
     }
     return Ossa.singleton;
-};</code></pre>
+};
+</code></pre>
         </article>
     </section>
 
@@ -457,7 +460,7 @@ module.exports.createNotifier = (options) => {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sat May 02 2020 16:54:51 GMT+0530 (India Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sun May 03 2020 02:08:03 GMT+0530 (India Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
