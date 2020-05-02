@@ -1,6 +1,7 @@
 # Ossa
 
 [![npm version](https://badge.fury.io/js/ossa.svg)](https://badge.fury.io/js/ossa)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbensooraj%2Fossa.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbensooraj%2Fossa?ref=badge_shield)
 
 Ossa is a Node.js server-side module (powered by Redis) for creating a basic notification service.
 
@@ -91,3 +92,6 @@ ossa.on('notification-received', async (notificationID, notificationPayload) => 
 
 
 [1]: https://momentjs.com/docs/#/use-it/node-js/
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbensooraj%2Fossa.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbensooraj%2Fossa?ref=badge_large)
