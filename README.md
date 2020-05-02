@@ -129,6 +129,21 @@ try {
 
 The `response` will be `1` if the update was successful, `0` if it wasn't.
 
+#### Delete the notification
+
+To completely obliterate the scheduled notification,
+
+```js
+const notificationID = "ossa::f1799e87-6740-4394-bf5e-d6e55eae3914";
+try {
+    const response = await ossa.deleteNotification(notificationID);
+} catch (error) {
+    throw new Error(error);
+}
+```
+
+The `response` will be `1` if the delete was successful, `0` if it wasn't (this would probably because the `notificationID` was not found or has expired already).
+
 [1]: https://momentjs.com/docs/#/use-it/node-js/
 
 ## License
