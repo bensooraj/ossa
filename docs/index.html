@@ -44,26 +44,32 @@
 
     <section>
         <article><h1>Ossa</h1>
-<p><a href="https://badge.fury.io/js/ossa"><img src="https://badge.fury.io/js/ossa.svg" alt="npm version"></a></p>
+<p><a href="https://badge.fury.io/js/ossa"><img src="https://badge.fury.io/js/ossa.svg" alt="npm version"></a>
+<a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fbensooraj%2Fossa?ref=badge_shield"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbensooraj%2Fossa.svg?type=shield" alt="FOSSA Status"></a></p>
 <p>Ossa is a Node.js server-side module (powered by Redis) for creating a basic notification service.</p>
 <p>It's API is dead simple. Developers are welcome to test it out in their pet projects!</p>
 <p><strong>Note: This is not production ready.</strong></p>
-<p>Example:</p>
-<p>Create the notifier:</p>
+<h2>Installation</h2>
+<p><code>$ npm install kue</code></p>
+<h2>Getting started:</h2>
+<h4>Create the notifier:</h4>
 <pre class="prettyprint source lang-js"><code>const Ossa = require('ossa');
-const ossa = Ossa.createNotifier({
-    // namespace: &quot;rambo_notifications&quot;,
+const ossa = new Ossa({
+    namespace: &quot;ossa&quot;, // Default
     redis: {
-        host: 'localhost',
-        port: 6379
+        host: 'localhost', // Default
+        port: 6379 // Default
     },
-    // debug: true
+    debug: false // Default
 });
 </code></pre>
-<p>Send a notification/message:</p>
+<h4>Send a notification/message:</h4>
 <pre class="prettyprint source lang-js"><code>try {
     const notificationID = await ossa.sendNotification({
         in: '10s',
+        // on: moment().utc().add(30, 'seconds'),
+        // on: '2020-05-02 03:23:00',
+        // on: '2020-05-01T21:59:16Z',
         message: JSON.stringify({
             name: &quot;Ben&quot;,
             age: 1000,
@@ -77,13 +83,33 @@ const ossa = Ossa.createNotifier({
 // Output:
 // notificationID:  ossa::f1799e87-6740-4394-bf5e-d6e55eae3914
 </code></pre>
-<p>Wait for the notification/message to be delivered:</p>
-<pre class="prettyprint source lang-js"><code>ossa.on('notification-received', async (notificationID, notificationPayload) => {
+<p>There are two ways to schedule a notification:</p>
+<ol>
+<li>
+<p><strong><code>in</code></strong>: Time duration in millisecods. Acceptable values are: <code>'2 days'</code>, <code>'1d'</code>, <code>'10h'</code>, <code>'2.5 hrs'</code>, <code>'2h'</code>, <code>'1m'</code>, <code>'5s'</code>, <code>'1y'</code> and <code>'100'</code>.</p>
+</li>
+<li>
+<p><strong><code>on</code></strong>: An ISO compliant future date. You can pass in a <a href="https://momentjs.com/docs/#/use-it/node-js/">momentjs</a> date object as well. Some possible values are: <code>moment().utc().add(30, 'seconds')</code>, <code>'2020-05-02 03:23:00'</code>, <code>'2020-05-01T21:59:16Z'</code> etc.</p>
+</li>
+<li>
+<p><strong><code>message</code></strong>: The notification payload to be sent/delivered to the receiver, at the scheduled time. Must be a  <code>string</code>.</p>
+</li>
+</ol>
+<h4>Listen for the notification/message to be delivered:</h4>
+<p><code>ossa</code> delivers the scheduled notification/message by emitting the <code>notification-received</code> event. You can listen</p>
+<pre class="prettyprint source lang-js"><code>// If you were listening for message/notification delivery in a different file (which in most cases you would be),
+// you just have to pass the same `namespace` when instantiating the an Ossa instance. It will return cached
+// instance specific to that namespace.
+
+const Ossa = require('ossa');
+const ossa = new Ossa({ namespace: &quot;ossa&quot; });
+
+ossa.on('notification-received', async (notificationID, notificationPayload) => {
+    // Process the payload received
     console.log(&quot;notificationPayload: &quot;, notificationPayload)
     console.table([
         { notificationID, message: notificationPayload.message }
     ]);
-    // Do whatever you want to do with 
 });
 
 // Output:
@@ -93,7 +119,54 @@ const ossa = Ossa.createNotifier({
 // ├─────────┼──────────────────────────────────────────────┼─────────────────────────────┤
 // │    0    │ 'ossa::f1799e87-6740-4394-bf5e-d6e55eae3914' │ '{&quot;name&quot;:&quot;Ben&quot;,&quot;age&quot;:1000}' │
 // └─────────┴──────────────────────────────────────────────┴─────────────────────────────┘
-</code></pre></article>
+</code></pre>
+<h4>Get/view the notification scheduled for delivery</h4>
+<p>You can view the notification/message scheduled for delivery using its <code>notificationID</code>. You get the both:</p>
+<ol>
+<li><code>ttl</code>: Time to live. Time remaining before the notification/message is delivered</li>
+<li><code>notificationPayload</code>: The actual payload that will be delivered.</li>
+</ol>
+<pre class="prettyprint source lang-js"><code>const Ossa = require('ossa');
+const ossa = new Ossa({ namespace: &quot;ossa&quot; });
+
+const notificationID = &quot;ossa::f1799e87-6740-4394-bf5e-d6e55eae3914&quot;;
+try {
+    const [ttl, notificationPayload] = await ossa.getNotificationByID(notificationID);
+    console.log(&quot;Message received: &quot;, notificationPayload.message)
+} catch (error) {
+    throw new Error(error);
+}
+</code></pre>
+<h4>Update/Reschedule the notification</h4>
+<pre class="prettyprint source lang-js"><code>const notificationID = &quot;ossa::f1799e87-6740-4394-bf5e-d6e55eae3914&quot;;
+const notificationPayload = {
+    in: '20s',
+    message: JSON.stringify({
+        name: &quot;Ben S&quot;,
+        age: 100,
+        some: &quot;more&quot;
+        and: &quot;some more&quot;
+    })
+}
+try {
+    const response = await ossa.updateNotification(notificationID, notificationPayload);
+} catch (error) {
+    throw new Error(error);
+}
+</code></pre>
+<p>The <code>response</code> will be <code>1</code> if the update was successful, <code>0</code> if it wasn't.</p>
+<h4>Delete the notification</h4>
+<p>To completely obliterate the scheduled notification,</p>
+<pre class="prettyprint source lang-js"><code>const notificationID = &quot;ossa::f1799e87-6740-4394-bf5e-d6e55eae3914&quot;;
+try {
+    const response = await ossa.deleteNotification(notificationID);
+} catch (error) {
+    throw new Error(error);
+}
+</code></pre>
+<p>The <code>response</code> will be <code>1</code> if the delete was successful, <code>0</code> if it wasn't (this would probably because the <code>notificationID</code> was not found or has expired already).</p>
+<h2>License</h2>
+<p><a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fbensooraj%2Fossa?ref=badge_large"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbensooraj%2Fossa.svg?type=large" alt="FOSSA Status"></a></p></article>
     </section>
 
 
@@ -110,7 +183,7 @@ const ossa = Ossa.createNotifier({
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sat May 02 2020 03:28:46 GMT+0530 (India Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Sat May 02 2020 16:54:51 GMT+0530 (India Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
