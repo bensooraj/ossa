@@ -7,7 +7,12 @@
     "test": "./node_modules/mocha/bin/mocha test/unit/ossa.js",
     "docs": "./node_modules/.bin/jsdoc -c jsDocConf.json"
   },
-  "keywords": [],
+  "keywords": [
+    "notification",
+    "scheduling",
+    "redis",
+    "messaging"
+  ],
   "author": "Ben Sooraj M <bensoorajm@gmail.com>",
   "license": "MIT",
   "repository": {

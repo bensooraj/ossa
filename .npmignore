@@ -13,3 +13,6 @@ typings
 .gitignore
 *.md
 commitlint.config.js
+CONTRIBUTING.md
+*.rdb
+.all-contributorsrc
