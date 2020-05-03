@@ -1,0 +1,49 @@
+version: '3'
+services:
+
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
+    networks:
+      - ossa-example-network
+  
+  sender-receiver:
+    build: ./sender-receiver
+    image: node:12.10.0-slim
+    volumes: 
+      - ./sender-receiver:/service
+    working_dir: /service
+    command: npm run dev
+    ports: 
+      - 3000:3000
+    networks:
+      - ossa-example-network
+  
+  receiver-one:
+    build: ./receiver-one
+    image: node:12.10.0-slim
+    volumes: 
+      - ./receiver-one:/service
+    working_dir: /service
+    command: npm run dev
+    ports: 
+      - 3001:3001
+    networks:
+      - ossa-example-network
+  
+  receiver-two:
+    build: ./receiver-two
+    image: node:12.10.0-slim
+    volumes: 
+      - ./receiver-two:/service
+    working_dir: /service
+    command: npm run dev
+    ports: 
+      - 3002:3002
+    networks:
+      - ossa-example-network
+
+networks: 
+  ossa-example-network:
