@@ -145,7 +145,14 @@ try {
 
 The `response` will be `1` if the delete was successful, `0` if it wasn't (this would probably because the `notificationID` was not found or has expired already).
 
+---
+
+###  Don't forget to checkout the [example][2] for a sample implementation.
+
+---
+
 [1]: https://momentjs.com/docs/#/use-it/node-js/
+[2]: examples/
 
 ## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fbensooraj%2Fossa.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fbensooraj%2Fossa?ref=badge_large)
