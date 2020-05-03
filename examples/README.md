@@ -32,7 +32,7 @@ Go ahead and check the `docker logs`. You should see something like the followin
 
 ![alt text](images/docker_logs_sample.png "Docker logs screenshot")
 
-To clean up after running the application:
+To clean up after you are done:
 
 ```sh
 $ make clean
