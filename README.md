@@ -11,7 +11,7 @@ It's API is dead simple. Developers are welcome to test it out in their pet proj
 
 ## Installation
 
-`$ npm install kue`
+`$ npm install ossa`
 
 ## Getting started:
 
@@ -25,7 +25,8 @@ const ossa = new Ossa({
         host: 'localhost', // Default
         port: 6379 // Default
     },
-    debug: false // Default
+    debug: false, // Default
+    mode: 0  // 0 => Send and receive (Default) | 1 => Send only
 });
 ```
 
