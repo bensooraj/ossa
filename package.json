@@ -1,6 +1,6 @@
 {
   "name": "ossa",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A simple Node.js package for implementing a notification service. Powered by Redis.",
   "main": "index.js",
   "scripts": {
